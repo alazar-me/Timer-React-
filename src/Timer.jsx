@@ -5,6 +5,7 @@ const Timer = () => {
   const [minutes, setMinutes] = useState('');
   const [seconds, setSeconds] = useState('');
   const [isActive, setIsActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [isSetup, setIsSetup] = useState(true);
 
   useEffect(() => {
@@ -12,25 +13,23 @@ const Timer = () => {
 
     if (isActive && totalSeconds > 0) {
       const interval = setInterval(() => {
-        totalSeconds -= 1;
-        setSeconds(totalSeconds % 60);
-        setMinutes(Math.floor((totalSeconds % 3600) / 60));
-        setHours(Math.floor(totalSeconds / 3600));
+        if (!isPaused) {
+          totalSeconds -= 1;
+          setSeconds(totalSeconds % 60);
+          setMinutes(Math.floor((totalSeconds % 3600) / 60));
+          setHours(Math.floor(totalSeconds / 3600));
 
-        if (totalSeconds === 0) {
-          clearInterval(interval);
-          setIsActive(false);
-          setTimeout(() => {
+          if (totalSeconds === 0) {
+            clearInterval(interval);
+            setIsActive(false);
             showNotification();
-          }, 1000);
+          }
         }
-       
-        
       }, 1000);
 
       return () => clearInterval(interval);
     }
-  }, [isActive, hours, minutes, seconds]);
+  }, [isActive, isPaused, hours, minutes, seconds]);
 
   const startTimer = () => {
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
@@ -43,13 +42,21 @@ const Timer = () => {
     }
   };
 
+  const pauseTimer = () => {
+    setIsPaused(true);
+  };
+
+  const resumeTimer = () => {
+    setIsPaused(false);
+  };
+
   const restartTimer = () => {
     setIsSetup(true);
+    setIsPaused(false);
     setHours('');
     setMinutes('');
     setSeconds('');
   };
-
 
   const showNotification = () => {
     alert('Time is up!');
@@ -60,7 +67,6 @@ const Timer = () => {
     const formattedTime = String(time).padStart(2, '0');
     return formattedTime;
   };
-
   return (
     <div className="text-center mt-10">
       {isSetup ? (
@@ -104,6 +110,19 @@ const Timer = () => {
           <button onClick={restartTimer} className="text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
             Restart Timer
           </button>
+       
+            {isPaused ? (
+              <button onClick={resumeTimer} className="text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l hover:from-teal-200 hover:to-lime-200 focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 ml-4">
+                Resume
+              </button>
+            ) : (
+              <button onClick={pauseTimer} className="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 ml-4">
+                Pause
+              </button>
+            )}
+            
+          
+          
         </>
       )}
     </div>
